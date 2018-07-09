@@ -2,7 +2,7 @@ import itchat
 from itchat.content import *
 import json
 import time
-import AI
+from . import AI
 
 list_friends = []
 switch_AI = True
@@ -66,8 +66,7 @@ def batch_message():
         print(friend.NickName)
         print(friend.UserName)
 
-
-if __name__ == "__main__":
+def run():
     itchat.auto_login(hotReload=True)
     list_friends = itchat.get_friends(update=True)
     #batch_message()
@@ -81,6 +80,4 @@ if __name__ == "__main__":
     #    f.write(json.dumps(result,ensure_ascii=False))
     #print(len(result))
     itchat.run()
-
-
-
+    
