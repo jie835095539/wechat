@@ -13,7 +13,7 @@ post_data = {
         }
     }
 
-def get_msg_by_AI(msg):
+def get_msg(msg):
     #UNDO, 自己实现更加个性化AI回复
     post_data['perception']['inputText']['Text'] = msg
     r = requests.post('http://openapi.tuling123.com/openapi/api/v2',json.dumps(post_data))
