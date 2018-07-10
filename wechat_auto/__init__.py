@@ -68,7 +68,7 @@ def run():
     global list_friends
     itchat.auto_login(hotReload=True)
     list_friends = itchat.get_friends(update=True)
-    #batch_message()
+    batch_message()
 
     #with open('friends.json','w',encoding='utf-8') as f:
     #    f.write(json.dumps(list_friends,ensure_ascii=False))

@@ -1,5 +1,6 @@
 import requests
 import json
+import os
 
 '''
 UNDO, 需要定时获取当天所有天气的预报数据，保存到本地，之后通过调用则返回本地数据
@@ -12,35 +13,55 @@ DAILY_API = 'https://api.seniverse.com/v3/weather/daily.json'
 LIFE_API = 'https://api.seniverse.com/v3/life/suggestion.json'
 UNIT = 'c'  # 单位
 LANGUAGE = 'zh-Hans'  # 查询结果的返回语言
+PATH=os.path.split(__file__)[0] #当前模块的绝对路径
+CITYS = [] #当前API可供查询的城市名称
+
+def init():
+    global CITYS
+    if len(CITYS)==0:
+        with open(PATH+"/../storage/city.json", 'r',encoding="utf8") as load_f:
+            city_dict = json.load(load_f)
+            CITYS = city_dict["citys"]
+    for city in CITYS:
+        try:
+            print(brief(city))
+        except Exception as e:
+            print(e)
 
 def _now(location):
-    result = requests.get(NOW_API, params={
+    r = requests.session()
+    r.keep_alive = False
+    result = r.get(NOW_API, params={
         'key': KEY,
         'location': location,
         'language': LANGUAGE,
         'unit': UNIT
-    }, timeout=1)
+    }, timeout=2)
     result = json.loads(result.text)
     if 'results' in result:
         return (True, location+'当前天气'+result['results'][0]['now']['text']+", 气温"+result['results'][0]['now']['temperature']+"摄氏度")
     return (False,result['status'])
 
 def _daily(location):
-    result = requests.get(DAILY_API, params={
+    r = requests.session()
+    r.keep_alive = False
+    result = r.get(DAILY_API, params={
         'key': KEY,
         'location': location,
         'language': LANGUAGE,
         'unit': UNIT
-    }, timeout=1)
+    }, timeout=2)
     result = json.loads(result.text)
     return result
 
 def _life(location):
-    result = requests.get(LIFE_API, params={
+    r = requests.session()
+    r.keep_alive = False
+    result = r.get(LIFE_API, params={
         'key': KEY,
         'location': location,
         'language': LANGUAGE,
-    }, timeout=1)
+    }, timeout=2)
     result = json.loads(result.text)
     return result
 
