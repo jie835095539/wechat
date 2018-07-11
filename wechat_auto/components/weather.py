@@ -1,10 +1,8 @@
 import requests
 import json
 import os
+import datetime
 
-'''
-UNDO, 需要定时获取当天所有天气的预报数据，保存到本地，之后通过调用则返回本地数据
-'''
 
 KEY = 'jpc0si7sh9qjudrz'  # API key
 UID = "U396147DF7"  # 用户ID
@@ -13,20 +11,54 @@ DAILY_API = 'https://api.seniverse.com/v3/weather/daily.json'
 LIFE_API = 'https://api.seniverse.com/v3/life/suggestion.json'
 UNIT = 'c'  # 单位
 LANGUAGE = 'zh-Hans'  # 查询结果的返回语言
+
 PATH=os.path.split(__file__)[0] #当前模块的绝对路径
 CITYS = [] #当前API可供查询的城市名称
+CITYS_WEATHER = {} #城市天气DIC数据
+STATUS = False #数据是否已经准备好
 
 def init():
     global CITYS
+    global CITYS_WEATHER
+    global STATUS
+    #读取城市列表
     if len(CITYS)==0:
         with open(PATH+"/../storage/city.json", 'r',encoding="utf8") as load_f:
             city_dict = json.load(load_f)
             CITYS = city_dict["citys"]
+    #检查今天是否已经存储过天气数据
+    if _check_weather_data():
+        with open(PATH+"/../storage/city_weather.json", 'r',encoding="utf8") as load_f:
+            CITYS_WEATHER = json.load(load_f)
+        STATUS = True
+        return
+    #清空JSON数据文件
+    with open(PATH+"/../storage/city_weather.json",'w') as city_weather:
+        city_weather.write("")
+    #请求城市天气
     for city in CITYS:
         try:
-            print(brief(city))
+            result = _brief(city)
+            if result[0]:
+                CITYS_WEATHER[city]=result[1]
         except Exception as e:
             print(e)
+    CITYS_WEATHER["date"] = datetime.date.today().strftime('%Y-%m-%d')
+    #写入天气数据到数据文件
+    with open(PATH+"/../storage/city_weather.json",'w',encoding='utf8') as city_weather:
+        json.dump(CITYS_WEATHER,city_weather,ensure_ascii=False)
+    STATUS = True
+
+def _check_weather_data():
+    citys_weather = []
+    with open(PATH+"/../storage/city_weather.json", 'a+', encoding="utf8") as load_f:
+        if load_f.tell()>0:
+            load_f.seek(0)
+            citys_weather = json.load(load_f)
+    if 'date' in citys_weather:
+        if citys_weather['date'] == datetime.date.today().strftime('%Y-%m-%d'):
+            return True
+    return False
 
 def _now(location):
     r = requests.session()
@@ -72,14 +104,14 @@ def _all(location):
     return result
 
 #获取目的城市的天气简报
-def brief(location):
+def _brief(location):
     content = _all(location)
     result = ""
     #如果查询出结果
     if 'results' in content['life']:
         today = content['daily']['results'][0]['daily'][0]
         suggestion = content['life']['results'][0]['suggestion']
-        result = '%s今天(%s)白天%s,夜间%s,最高温度%s摄氏度,最低温度%s摄氏度,%s风。%s洗车，天气偏%s,%s运动，%s旅行' % (location, today['date'], today['text_day'], today['text_night'], today['high'], today['low'], today['wind_direction'],suggestion['car_washing']['brief'],suggestion['dressing']['brief'],suggestion['sport']['brief'],suggestion['travel']['brief'])
+        result = '%s今天(%s)白天%s,夜间%s,最高温度%s摄氏度,最低温度%s摄氏度,%s风。%s洗车，天气%s,运动%s' % (location, today['date'], today['text_day'], today['text_night'], today['high'], today['low'], today['wind_direction'],suggestion['car_washing']['brief'],suggestion['dressing']['brief'],suggestion['sport']['brief'])
         return (True, result)
     else:#如果没有
         return (False, content['life']['status'])
