@@ -4,11 +4,17 @@ import json
 import time
 import threading
 import os
+import re
 from .components import AI
 from .components import weather
 
-list_friends = []
-switch_AI = True
+'''
+全局变量
+'''
+LIST_FRIENDS = [] #好友列表
+SWITCH_AI = False #是否开启AI自动回复
+SWITCH_GREET = False #是否开启定时问候
+TIMING_GREET = threading.Thread(target=batch_message,args=(1,2))
 
 '''
 #全部消息
@@ -18,24 +24,29 @@ def text_reply(msg):
     return 'Hello'
 '''
 
-'''
 #文本消息
 @itchat.msg_register(TEXT)
 def msg_system(msg):
-    global switch_AI
-    #通过文件助手控制是否开启AI自动回复
+    global SWITCH_AI
+    #通过文件助手控制各个模块开关
     if msg['ToUserName'] == 'filehelper':
-        if msg['Text'] == 'start':
-            switch_AI = True
-            itchat.send('AI started', toUserName='filehelper')
-        if msg['Text'] == 'stop':
-            switch_AI = False
-            itchat.send('AI stoped', toUserName='filehelper')
+        _command(msg)
         return
     #备注为AI的用户自动使用AI回复
     if msg['User']['RemarkName'] == 'AI' and switch_AI==True:
         return AI.get_msg(msg['Text'])
-'''
+
+def _command(msg):
+    if re.match(r'^开启AI回复.*$',msg['Text']) != None:
+        itchat.send('已经开启AI回复', toUserName='filehelper')
+    if re.match(r'^关闭AI回复.*$',msg['Text']) != None:
+        itchat.send('已经关闭AI回复', toUserName='filehelper')
+    if re.match(r'^开启定时消息.*$',msg['Text']) != None:
+        itchat.send('已经开启定时消息', toUserName='filehelper')
+    if re.match(r'^关闭定时消息.*$',msg['Text']) != None:
+        itchat.send('已经关闭定时消息', toUserName='filehelper')
+
+
 '''
 #系统消息
 #UNDO, 删除好友用户记录到本地文档，定期清理好友
@@ -53,17 +64,17 @@ def add_friend(msg):
     #UNDO 新好友的打招呼信息,延迟后发送公众号信息
     itchat.send_msg('Nice to meet you!',msg['RecommendInfo']['UserName'])
 '''
-#群发问候 子线程
-def batch_message(list_friends, weathers):
+#定时问候 子线程
+def batch_message(a, weathers):
+    global SWITCH_GREET
+    global LIST_FRIENDS
     #读取好友地址，调用接口定时发送天气预报
-
-    while True:
-        if time.localtime(time.time())[3]==23 and time.localtime(time.time())[4]==28:
-            for friend in list_friends:
-                if friend['RemarkName'] == '毛诗茹' or friend['NickName']=='毛诗茹':
-                    print("YES")
-                    weather_brief = _get_location_weather(friend, weathers)
-                    itchat.send('@msg@'+weather_brief,friend.UserName)
+    while SWITCH_GREET:
+        if time.localtime(time.time())[3]==7 and time.localtime(time.time())[4]==0:
+            for friend in LIST_FRIENDS:
+                if friend['RemarkName'] == '张平' or friend['NickName']=='张平':
+                    #weather_brief = _get_location_weather(friend, weathers)
+                    itchat.send('@msg@'+"早上好, "+weather_brief,friend.UserName)
             time.sleep(60)
 
 def _get_location_weather(friend, weathers):
@@ -73,20 +84,18 @@ def _get_location_weather(friend, weathers):
         return  weathers[friend['Province']]
     if '北京' in weathers:
         return  weathers['北京']
-    return "现在是23:28"
+    return ""
 
 
 def run():
-    
-    global list_friends
+    global LIST_FRIENDS
     itchat.auto_login(hotReload=True)
     #获取天气
-    weather.init()
+    #weather.init()
     #获取好友
-    list_friends = itchat.get_friends(update=True)
+    LIST_FRIENDS = itchat.get_friends(update=True)
     #开启定时问候任务
-    timing_task = threading.Thread(target=batch_message,args=(list_friends,weather.CITYS_WEATHER))
-    timing_task.start()
+    #timing_task.start()
     #with open('friends.json','w',encoding='utf-8') as f:
     #    f.write(json.dumps(list_friends,ensure_ascii=False))
     #print(len(result))
