@@ -3,8 +3,14 @@ import json
 import os
 import datetime
 
+'''
+AP010014: 心知天气错误代码，免费用户超过了每小时访问量额度。一小时后自动恢复。
+'''
 
-KEY = 'jpc0si7sh9qjudrz'  # API key
+
+KEY2 = 'dhxi7zagtatvtrgb' # API key 185
+UID2 = 'UFD6F88B7C'  # 用户ID
+KEY = 'jpc0si7sh9qjudrz'  # API key 150
 UID = "U396147DF7"  # 用户ID
 NOW_API = 'https://api.seniverse.com/v3/weather/now.json'  # API URL，可替换为其他 URL
 DAILY_API = 'https://api.seniverse.com/v3/weather/daily.json'
@@ -41,6 +47,14 @@ def init():
             result = _brief(city)
             if result[0]:
                 CITYS_WEATHER[city]=result[1]
+            else:
+                if result[1]=='AP010014': #若请求次数满了，则换key值，重新请求当前city，若不是，则继续
+                    _change()
+                    result = _brief(city)
+                    if result[0]:
+                        CITYS_WEATHER[city]=result[1]
+                    else:
+                        print(result[1])
         except Exception as e:
             print(e)
     CITYS_WEATHER["date"] = datetime.date.today().strftime('%Y-%m-%d')
@@ -48,6 +62,14 @@ def init():
     with open(PATH+"/../storage/city_weather.json",'w',encoding='utf8') as city_weather:
         json.dump(CITYS_WEATHER,city_weather,ensure_ascii=False)
     STATUS = True
+
+def _change():
+    global KEY2
+    global UID2
+    global KEY
+    global UID
+    KEY,KEY2 = KEY2,KEY
+    UID,UID2 = UID2,UID
 
 def _check_weather_data():
     citys_weather = []
@@ -114,7 +136,13 @@ def _brief(location):
         result = '%s今天(%s)白天%s,夜间%s,最高温度%s摄氏度,最低温度%s摄氏度,%s风。%s洗车，天气%s,运动%s' % (location, today['date'], today['text_day'], today['text_night'], today['high'], today['low'], today['wind_direction'],suggestion['car_washing']['brief'],suggestion['dressing']['brief'],suggestion['sport']['brief'])
         return (True, result)
     else:#如果没有
-        return (False, content['life']['status'])
+        print(content['life'])
+        if 'status_code' in content['life']:
+            if content['life']['status_code'] == 'AP010014':
+                return (False, 'AP010014')
+            else:
+                return (False, content['life']['status'])
+        return (False, '未知错误')
 
 
 
