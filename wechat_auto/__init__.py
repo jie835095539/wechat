@@ -14,7 +14,9 @@ from .components import weather
 LIST_FRIENDS = [] #好友列表
 SWITCH_AI = False #是否开启AI自动回复
 SWITCH_GREET = False #是否开启定时问候
-ALLCOMMAND = "开启(关闭)AI回复\n开启(关闭)定时消息\n状态\n"
+ALLCOMMAND = "开启(关闭)AI回复\n开启(关闭)定时消息[,小时][,分钟]\n状态\n"
+HOUR='8' #定时消息时针
+MIN='0' #定时消息分针
 
 '''
 #全部消息
@@ -39,6 +41,8 @@ def msg_system(msg):
 def _command(msg):
     global SWITCH_AI
     global SWITCH_GREET
+    global HOUR
+    global MIN
     if re.match(r'^help.*$',msg['Text']) != None:
         itchat.send(ALLCOMMAND, toUserName='filehelper')
     if re.match(r'^开启AI回复.*$',msg['Text']) != None:
@@ -48,8 +52,15 @@ def _command(msg):
         SWITCH_AI = False
         itchat.send('已经关闭AI回复', toUserName='filehelper')
     if re.match(r'^开启定时消息.*$',msg['Text']) != None:
+        #如果命令设置了时间，则设置时间
+        t_hour = re.search(r'^开启定时消息,*([0-9]*),*([0-9]*).*$',msg['Text'])[1]
+        t_min = re.search(r'^开启定时消息,*([0-9]*),*([0-9]*).*$',msg['Text'])[2]
+        if t_hour!="":
+            HOUR = t_hour
+        if t_min!="":
+            MIN = t_min
         SWITCH_GREET = True
-        itchat.send('已经开启定时消息', toUserName='filehelper')
+        itchat.send('已经开启定时消息,时间为'+HOUR+"点"+MIN+"分", toUserName='filehelper')
     if re.match(r'^关闭定时消息.*$',msg['Text']) != None:
         SWITCH_GREET = False
         itchat.send('已经关闭定时消息', toUserName='filehelper')
@@ -84,7 +95,7 @@ def get_status():
     else:
         result += "AI回复功能: "+ "关闭\n"
     if SWITCH_GREET:
-        result += "定时问候功能: "+ "开启\n"
+        result += "定时问候功能: 开启,"+HOUR+"点"+MIN+"分\n"
     else:
         result += "定时问候功能: "+ "关闭\n"
     itchat.send(result, toUserName='filehelper')
@@ -96,8 +107,12 @@ def batch_message(a):
     global LIST_FRIENDS
     #读取好友地址，调用接口定时发送天气预报
     while True:
+        #如果当前是凌晨1点，则重新初始化天气数据
+        if time.localtime(time.time())[3]==1 and time.localtime(time.time())[4]==0:
+            weather.init()
+        
         if (SWITCH_GREET):
-            if time.localtime(time.time())[3]==21 and time.localtime(time.time())[4]==39:
+            if time.localtime(time.time())[3]==int(HOUR) and time.localtime(time.time())[4]==int(MIN):
                 for friend in LIST_FRIENDS:
                     if friend['RemarkName'] == '咖喱' or friend['NickName']=='咖喱':
                         weather_brief = _get_location_weather(friend, weather.CITYS_WEATHER)
@@ -106,11 +121,11 @@ def batch_message(a):
 
 def _get_location_weather(friend, weathers):
     if friend['City'] in weathers:
-        return  weathers[friend['City']]
+        return  '\n'+weathers[friend['City']]
     if friend['Province'] in weathers:
-        return  weathers[friend['Province']]
+        return  '\n'+weathers[friend['Province']]
     if '北京' in weathers:
-        return  weathers['北京']
+        return  '\n'+weathers['北京']
     return ""
 
 

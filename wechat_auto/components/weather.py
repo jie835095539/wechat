@@ -2,6 +2,7 @@ import requests
 import json
 import os
 import datetime
+import time
 
 '''
 AP010014: 心知天气错误代码，免费用户超过了每小时访问量额度。一小时后自动恢复。
@@ -22,11 +23,13 @@ PATH=os.path.split(__file__)[0] #当前模块的绝对路径
 CITYS = [] #当前API可供查询的城市名称
 CITYS_WEATHER = {} #城市天气DIC数据
 STATUS = False #数据是否已经准备好
+CURRENT_DATE= '0' #当前数据的日期，日
 
 def init():
     global CITYS
     global CITYS_WEATHER
     global STATUS
+    global CURRENT_DATE
     #读取城市列表
     if len(CITYS)==0:
         with open(PATH+"/../storage/city.json", 'r',encoding="utf8") as load_f:
@@ -37,22 +40,27 @@ def init():
         with open(PATH+"/../storage/city_weather.json", 'r',encoding="utf8") as load_f:
             CITYS_WEATHER = json.load(load_f)
         STATUS = True
+        CURRENT_DATE = time.localtime(time.time())[2]
         return
     #清空JSON数据文件
     with open(PATH+"/../storage/city_weather.json",'w') as city_weather:
         city_weather.write("")
     #请求城市天气
+    index = 0
     for city in CITYS:
+        index += 1
         try:
             result = _brief(city)
             if result[0]:
                 CITYS_WEATHER[city]=result[1]
+                print(index+': 正在写入 '+city+' 的数据...')
             else:
                 if result[1]=='AP010014': #若请求次数满了，则换key值，重新请求当前city，若不是，则继续
                     _change()
                     result = _brief(city)
                     if result[0]:
                         CITYS_WEATHER[city]=result[1]
+                        print(index+': 正在写入 '+city+' 的数据...')
                     else:
                         print(result[1])
         except Exception as e:
@@ -62,7 +70,7 @@ def init():
     with open(PATH+"/../storage/city_weather.json",'w',encoding='utf8') as city_weather:
         json.dump(CITYS_WEATHER,city_weather,ensure_ascii=False)
     STATUS = True
-
+    CURRENT_DATE = time.localtime(time.time())[2]
 def _change():
     global KEY2
     global UID2
