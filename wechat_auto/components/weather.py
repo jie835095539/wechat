@@ -19,7 +19,6 @@ LIFE_API = 'https://api.seniverse.com/v3/life/suggestion.json'
 UNIT = 'c'  # 单位
 LANGUAGE = 'zh-Hans'  # 查询结果的返回语言
 
-PATH=os.path.split(__file__)[0] #当前模块的绝对路径
 CITYS = [] #当前API可供查询的城市名称
 CITYS_WEATHER = {} #城市天气DIC数据
 STATUS = False #数据是否已经准备好
@@ -32,18 +31,18 @@ def init():
     global CURRENT_DATE
     #读取城市列表
     if len(CITYS)==0:
-        with open(PATH+"/../storage/city.json", 'r',encoding="utf8") as load_f:
+        with open("storage/city.json", 'r',encoding="utf8") as load_f:
             city_dict = json.load(load_f)
             CITYS = city_dict["citys"]
     #检查今天是否已经存储过天气数据
     if _check_weather_data():
-        with open(PATH+"/../storage/city_weather.json", 'r',encoding="utf8") as load_f:
+        with open("storage/city_weather.json", 'r',encoding="utf8") as load_f:
             CITYS_WEATHER = json.load(load_f)
         STATUS = True
         CURRENT_DATE = time.localtime(time.time())[2]
         return
     #清空JSON数据文件
-    with open(PATH+"/../storage/city_weather.json",'w') as city_weather:
+    with open("storage/city_weather.json",'w') as city_weather:
         city_weather.write("")
     #请求城市天气
     index = 0
@@ -67,7 +66,7 @@ def init():
             print(e)
     CITYS_WEATHER["date"] = datetime.date.today().strftime('%Y-%m-%d')
     #写入天气数据到数据文件
-    with open(PATH+"/../storage/city_weather.json",'w',encoding='utf8') as city_weather:
+    with open("storage/city_weather.json",'w',encoding='utf8') as city_weather:
         json.dump(CITYS_WEATHER,city_weather,ensure_ascii=False)
     STATUS = True
     CURRENT_DATE = time.localtime(time.time())[2]
@@ -81,7 +80,7 @@ def _change():
 
 def _check_weather_data():
     citys_weather = []
-    with open(PATH+"/../storage/city_weather.json", 'a+', encoding="utf8") as load_f:
+    with open("storage/city_weather.json", 'a+', encoding="utf8") as load_f:
         if load_f.tell()>0:
             load_f.seek(0)
             citys_weather = json.load(load_f)
