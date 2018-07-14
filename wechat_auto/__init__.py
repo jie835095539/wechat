@@ -17,6 +17,7 @@ SWITCH_GREET = False #是否开启定时问候
 ALLCOMMAND = "开启(关闭)AI回复\n开启(关闭)定时消息[,小时][,分钟]\n状态\n"
 HOUR='8' #定时消息时针
 MIN='0' #定时消息分针
+GREETING=('Hi[愉快]','在一切开始之前，能不能请你关注一下我参与创作的公众号“北城故事会”[可怜]\n在我的朋友圈就能找到\n当然决定权在你啦,手动感谢O(∩_∩)O哈哈~','顺便一提，在公众号回复“咖喱”可以看到我好多生活照哦[偷笑]')#加好友后的打招呼信息
 
 '''
 #全部消息
@@ -37,6 +38,36 @@ def msg_system(msg):
     #开启后自动回复
     if SWITCH_AI:
         return AI.get_msg(msg['Text'],msg['User']['PYQuanPin'])
+
+
+
+
+
+#系统消息
+#删除好友用户记录到本地文档，定期清理好友
+@itchat.msg_register(NOTE)
+def msg_system(msg):
+    #如果拉黑或者删除，则读取昵称写入文件
+    if re.match(r'^.*开启了朋友验证，你还不是他（她）朋友.*$',msg['Text'])!=None or re.match(r'^消息已发出，但被对方拒收了.*$',msg['Text'])!=None:
+        nickname=msg['User']['NickName']
+        with open("deleted_friend",'a+',encoding='utf8') as deleted_friend:
+            deleted_friend.write(nickname+'\n')
+
+#新好友请求
+@itchat.msg_register(FRIENDS)
+def add_friend(msg):
+    print(msg)
+    #延时接受好友请求
+    #time.sleep(10)
+    itchat.add_friend(**msg['Text'])# 该操作将自动将好友的消息录入，不需要重载通讯录
+    #新好友的打招呼信息,延迟后发送公众号信息
+    time.sleep(2)
+    itchat.send_msg(GREETING[0],msg['RecommendInfo']['UserName'])
+    time.sleep(5)
+    itchat.send_msg(GREETING[1],msg['RecommendInfo']['UserName'])
+    time.sleep(3)
+    itchat.send_msg(GREETING[2],msg['RecommendInfo']['UserName'])
+
 
 def _command(msg):
     global SWITCH_AI
@@ -68,24 +99,6 @@ def _command(msg):
         get_status()
     
 
-
-'''
-#系统消息
-#UNDO, 删除好友用户记录到本地文档，定期清理好友
-@itchat.msg_register(NOTE)
-def msg_system(msg):
-    print(msg)
-
-#新好友请求
-@itchat.msg_register(FRIENDS)
-def add_friend(msg):
-    print(msg)
-    #延时接受好友请求
-    #time.sleep(10)
-    itchat.add_friend(**msg['Text'])# 该操作将自动将好友的消息录入，不需要重载通讯录
-    #UNDO 新好友的打招呼信息,延迟后发送公众号信息
-    itchat.send_msg('Nice to meet you!',msg['RecommendInfo']['UserName'])
-'''
 #获取当前机器人状态
 def get_status():
     result = "当前时间为:"+time.strftime('%Y-%m-%d %H:%M:%S',time.localtime())

@@ -53,14 +53,14 @@ def init():
             result = _brief(city)
             if result[0]:
                 CITYS_WEATHER[city]=result[1]
-                print(index+': 正在写入 '+city+' 的数据...')
+                print(str(index)+': 正在写入 '+city+' 的数据...')
             else:
                 if result[1]=='AP010014': #若请求次数满了，则换key值，重新请求当前city，若不是，则继续
                     _change()
                     result = _brief(city)
                     if result[0]:
                         CITYS_WEATHER[city]=result[1]
-                        print(index+': 正在写入 '+city+' 的数据...')
+                        print(str(index)+': 正在写入 '+city+' 的数据...')
                     else:
                         print(result[1])
         except Exception as e:
