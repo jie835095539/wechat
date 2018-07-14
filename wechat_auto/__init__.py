@@ -127,9 +127,8 @@ def batch_message(a):
         if (SWITCH_GREET):
             if time.localtime(time.time())[3]==int(HOUR) and time.localtime(time.time())[4]==int(MIN):
                 for friend in LIST_FRIENDS:
-                    if friend['RemarkName'] == '咖喱' or friend['NickName']=='咖喱':
-                        weather_brief = _get_location_weather(friend, weather.CITYS_WEATHER)
-                        itchat.send('@msg@'+"早上好 "+weather_brief,friend.UserName)
+                    weather_brief = _get_location_weather(friend, weather.CITYS_WEATHER)
+                    itchat.send('@msg@'+"早上好 "+weather_brief,friend.UserName)
         time.sleep(60)
 
 def _get_location_weather(friend, weathers):
