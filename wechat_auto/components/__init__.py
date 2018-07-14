@@ -1,2 +1,2 @@
-from .AI import AI
-from .weather import weather
+from . import ai
+from . import weather

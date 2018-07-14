@@ -5,7 +5,7 @@ import time
 import threading
 import os
 import re
-from .components import AI
+from .components import ai
 from .components import weather
 
 '''
@@ -37,7 +37,7 @@ def msg_system(msg):
         return
     #开启后自动回复
     if SWITCH_AI:
-        return AI.get_msg(msg['Text'],msg['User']['PYQuanPin'])
+        return ai.get_msg(msg['Text'],msg['User']['PYQuanPin'])
 
 
 
