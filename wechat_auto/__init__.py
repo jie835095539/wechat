@@ -5,6 +5,7 @@ import time
 import threading
 import os
 import re
+import random
 from .components import ai
 from .components import weather
 
@@ -17,7 +18,9 @@ SWITCH_GREET = False #是否开启定时问候
 ALLCOMMAND = "开启(关闭)AI回复\n开启(关闭)定时消息[,小时][,分钟]\n状态\n"
 HOUR='8' #定时消息时针
 MIN='0' #定时消息分针
-GREETING=('Hi[愉快]','在一切开始之前，能不能请你关注一下我参与创作的公众号“北城故事会”[可怜]\n在我的朋友圈就能找到\n当然决定权在你啦,手动感谢O(∩_∩)O哈哈~','顺便一提，在公众号回复“咖喱”可以看到我好多生活照哦[偷笑]')#加好友后的打招呼信息
+GREETING=('Hi[愉快]','在一切开始之前，能不能请你关注一下我参与创作的公众号“北城故事会”[可怜]\n在我的朋友圈就能找到\n当然决定权在你啦,手动感谢O(∩_∩)O哈哈~','顺便一提，如果发现了哪篇是我写的文章，说不准有小惊喜哦[偷笑]')#加好友后的打招呼信息
+MAX_COUNT = 100 #问候用户每天最大数量
+
 
 '''
 #全部消息
@@ -118,17 +121,23 @@ def get_status():
 def batch_message(a):
     global SWITCH_GREET
     global LIST_FRIENDS
+    friends = LIST_FRIENDS.copy()
     #读取好友地址，调用接口定时发送天气预报
     while True:
         #如果当前是凌晨1点，则重新初始化天气数据
         if time.localtime(time.time())[3]==1 and time.localtime(time.time())[4]==0:
             weather.init()
-        
+
         if (SWITCH_GREET):
             if time.localtime(time.time())[3]==int(HOUR) and time.localtime(time.time())[4]==int(MIN):
+                index = 0
                 for friend in LIST_FRIENDS:
+                    if index>MAX_COUNT:
+                        break
                     weather_brief = _get_location_weather(friend, weather.CITYS_WEATHER)
                     itchat.send('@msg@'+"早上好 "+weather_brief,friend.UserName)
+                    index += 1
+                    time.sleep(1)
         time.sleep(60)
 
 def _get_location_weather(friend, weathers):
@@ -143,11 +152,12 @@ def _get_location_weather(friend, weathers):
 
 def run():
     global LIST_FRIENDS
-    itchat.auto_login(hotReload=True)
+    itchat.auto_login(hotReload=False)
     #获取天气
     weather.init()
     #获取好友
     LIST_FRIENDS = itchat.get_friends(update=True)
+    random.shuffle(LIST_FRIENDS)
     #开启定时问候任务
     timing_greet = threading.Thread(target=batch_message,args=(1,))
     timing_greet.start()
