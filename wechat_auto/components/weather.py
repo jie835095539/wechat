@@ -29,6 +29,7 @@ def init():
     global CITYS_WEATHER
     global STATUS
     global CURRENT_DATE
+
     #读取城市列表
     if len(CITYS)==0:
         with open("storage/city.json", 'r',encoding="utf8") as load_f:

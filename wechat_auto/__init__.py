@@ -6,7 +6,7 @@ import threading
 import os
 import re
 import random
-from .components import ai
+from .components import AI
 from .components import weather
 
 '''
@@ -18,7 +18,7 @@ SWITCH_GREET = False #是否开启定时问候
 ALLCOMMAND = "开启(关闭)AI回复\n开启(关闭)定时消息[,小时][,分钟]\n状态\n"
 HOUR='8' #定时消息时针
 MIN='0' #定时消息分针
-GREETING=('Hi[愉快]','在一切开始之前，能不能请你关注一下我参与创作的公众号“北城故事会”[可怜]\n在我的朋友圈就能找到\n当然决定权在你啦,手动感谢O(∩_∩)O哈哈~','顺便一提，如果发现了哪篇是我写的文章，说不准有小惊喜哦[偷笑]')#加好友后的打招呼信息
+GREETING=('Hi[愉快]','很高兴认识你~以后我们就是朋友啦！','不过我可能不会经常在线，所以如果回复的不及时请见谅哦[偷笑]')#加好友后的打招呼信息
 MAX_COUNT = 100 #问候用户每天最大数量
 
 
@@ -40,7 +40,7 @@ def msg_system(msg):
         return
     #开启后自动回复
     if SWITCH_AI:
-        return ai.get_msg(msg['Text'],msg['User']['PYQuanPin'])
+        return AI.get_msg(msg['Text'],msg['User']['PYQuanPin'])
 
 
 
@@ -63,7 +63,7 @@ def add_friend(msg):
     #延时接受好友请求
     #time.sleep(10)
     itchat.add_friend(**msg['Text'])# 该操作将自动将好友的消息录入，不需要重载通讯录
-    #新好友的打招呼信息,延迟后发送公众号信息
+    #新好友的打招呼信息,延迟后发送打招呼信息
     time.sleep(2)
     itchat.send_msg(GREETING[0],msg['RecommendInfo']['UserName'])
     time.sleep(5)
@@ -161,9 +161,8 @@ def run():
     #开启定时问候任务
     timing_greet = threading.Thread(target=batch_message,args=(1,))
     timing_greet.start()
-    #with open('friends.json','w',encoding='utf-8') as f:
-    #    f.write(json.dumps(list_friends,ensure_ascii=False))
-    #print(len(result))
+    #获取当前机器人状态
     get_status()
+    #运行
     itchat.run()
     
