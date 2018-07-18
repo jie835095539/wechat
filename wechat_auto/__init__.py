@@ -39,7 +39,7 @@ def msg_system(msg):
         _command(msg)
         return
     #开启后自动回复
-    if SWITCH_AI:
+    if SWITCH_AI and msg['User']['RemarkName']!='例外':
         return AI.get_msg(msg['Text'],msg['User']['PYQuanPin'])
 
 
@@ -150,9 +150,9 @@ def _get_location_weather(friend, weathers):
     return ""
 
 
-def run():
+def run(hot = False):
     global LIST_FRIENDS
-    itchat.auto_login(hotReload=False)
+    itchat.auto_login(hotReload=hot)
     #获取天气
     weather.init()
     #获取好友
