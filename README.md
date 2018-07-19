@@ -17,3 +17,6 @@ storage文件夹下须有city.json文件告诉组件需要提前请求哪些城�
 
 # New features
 如果好友的备注是“例外”那么无论如何都不会自动AI回复
+
+# Bug Fixed
+改变了userid的获取方式，不会在调用图灵AI时出现userid错误的问题

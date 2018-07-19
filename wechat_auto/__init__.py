@@ -40,7 +40,7 @@ def msg_system(msg):
         return
     #开启后自动回复
     if SWITCH_AI and msg['User']['RemarkName']!='例外':
-        return AI.get_msg(msg['Text'],msg['User']['PYQuanPin'])
+        return AI.get_msg(msg['Text'],msg['User']['UserName'][-32:-1])
 
 
 
