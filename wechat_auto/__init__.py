@@ -13,13 +13,17 @@ from .components import weather
 全局变量
 '''
 LIST_FRIENDS = [] #好友列表
+LIST_CHATROOM = [] #群列表
 SWITCH_AI = False #是否开启AI自动回复
 SWITCH_GREET = False #是否开启定时问候
-ALLCOMMAND = "开启(关闭)AI回复\n开启(关闭)定时消息[,小时][,分钟]\n状态\n"
+SWITCH_CHATROOM = False #是否开启定时群消息
+ALLCOMMAND = "开启(关闭)AI回复\n开启(关闭)定时消息[,小时][,分钟]\n开启(关闭)群消息\n状态\n"
 HOUR='8' #定时消息时针
 MIN='0' #定时消息分针
 GREETING=('Hi[愉快]','很高兴认识你~以后我们就是朋友啦！','不过我可能不会经常在线，所以如果回复的不及时请见谅哦[偷笑]')#加好友后的打招呼信息
 MAX_COUNT = 100 #问候用户每天最大数量
+CHATROOM_NAME = "哈哈哈哈哈哈哈"
+CHATROOM_SPAN = 3600
 
 
 '''
@@ -75,6 +79,7 @@ def add_friend(msg):
 def _command(msg):
     global SWITCH_AI
     global SWITCH_GREET
+    global SWITCH_CHATROOM
     global HOUR
     global MIN
     if re.match(r'^help.*$',msg['Text']) != None:
@@ -98,6 +103,12 @@ def _command(msg):
     if re.match(r'^关闭定时消息.*$',msg['Text']) != None:
         SWITCH_GREET = False
         itchat.send('已经关闭定时消息', toUserName='filehelper')
+    if re.match(r'^开启群消息.*$',msg['Text']) != None:
+        SWITCH_CHATROOM = True
+        itchat.send('已经开启定时群消息', toUserName='filehelper')
+    if re.match(r'^关闭群消息.*$',msg['Text']) != None:
+        SWITCH_CHATROOM = False
+        itchat.send('已经关闭定时群消息', toUserName='filehelper')
     if re.match(r'^状态.*$',msg['Text']) != None:
         get_status()
     
@@ -114,6 +125,10 @@ def get_status():
         result += "定时问候功能: 开启,"+HOUR+"点"+MIN+"分\n"
     else:
         result += "定时问候功能: "+ "关闭\n"
+    if SWITCH_CHATROOM:
+        result += "定时群消息: "+ "开启\n"
+    else:
+        result += "定时群消息: "+ "关闭\n"
     itchat.send(result, toUserName='filehelper')
 
 
@@ -140,6 +155,21 @@ def batch_message(a):
                     time.sleep(1)
         time.sleep(60)
 
+#定时群消息 子线程
+def batch_chatroom(name):
+    global LIST_CHATROOM
+    while True:
+        if SWITCH_CHATROOM:
+            msg = _get_joke()
+            print(msg)
+            if msg=="":
+                time.sleep(CHATROOM_SPAN)
+                continue
+            for chatroom in LIST_CHATROOM:
+                if re.search(r'^.*'+name+'.*$',chatroom['NickName'])!=None:
+                    itchat.send(msg, chatroom['UserName'])
+        time.sleep(CHATROOM_SPAN)
+
 def _get_location_weather(friend, weathers):
     if friend['City'] in weathers:
         return  '\n'+weathers[friend['City']]
@@ -149,18 +179,32 @@ def _get_location_weather(friend, weathers):
         return  '\n'+weathers['北京']
     return ""
 
+def _get_joke():
+    #读取文本
+    with open("storage/joke", 'r',encoding="utf8") as load_f:
+        arr = load_f.read().split('|')
+        msg = arr.pop()
+    #回写文本
+    with open("storage/joke", 'w',encoding="utf8") as load_f:
+        load_f.write('|'.join(arr))
+    return msg
 
 def run(hot = False):
     global LIST_FRIENDS
+    global LIST_CHATROOM
     itchat.auto_login(hotReload=hot)
     #获取天气
-    weather.init()
-    #获取好友
+    #weather.init()
+    #获取好友和群列表
     LIST_FRIENDS = itchat.get_friends(update=True)
+    LIST_CHATROOM = itchat.get_chatrooms(True)
     random.shuffle(LIST_FRIENDS)
     #开启定时问候任务
     timing_greet = threading.Thread(target=batch_message,args=(1,))
     timing_greet.start()
+    #开启定时群消息任务
+    timing_joke = threading.Thread(target=batch_chatroom,args=(CHATROOM_NAME,))
+    timing_joke.start()
     #获取当前机器人状态
     get_status()
     #运行
