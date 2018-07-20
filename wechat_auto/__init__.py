@@ -194,7 +194,7 @@ def run(hot = False):
     global LIST_CHATROOM
     itchat.auto_login(hotReload=hot)
     #获取天气
-    #weather.init()
+    weather.init()
     #获取好友和群列表
     LIST_FRIENDS = itchat.get_friends(update=True)
     LIST_CHATROOM = itchat.get_chatrooms(True)
