@@ -223,6 +223,7 @@ def batch_chatroom(name):
         if SWITCH_CHATROOM:
             msg = _get_joke()
             print(msg)
+            print("\n")
             if msg=="":
                 time.sleep(CHATROOM_SPAN)
                 continue
@@ -239,7 +240,7 @@ def _get_joke():
     #回写文本
     with open("storage/joke", 'w',encoding="utf8") as load_f:
         load_f.write('|'.join(arr))
-    return msg
+    return msg.strip()
 
 #END------------------------------------定时给在特定的群里发送消息模块---------------------------------
 
