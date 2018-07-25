@@ -21,3 +21,8 @@
 添加新功能，可以在所有群聊有新人加入的时候自动@新人打招呼，并且可是设置群名称，为LIST变量
 过滤变量为`wechat_auto.CHATROOM_NAME_GREETING`
 打招呼信息变量为`wechat_auto.CHATROOM_GREETING`
+
+### 3
+
+添加新功能，在指定群众任何人发布特定消息，比如“群主最棒”，此微信自动回复一条段子，可以设置时间间隔`AUTOFUNNY_SPAN`以秒计,
+消息内容`CHATRROM_AUTOFUNNY`,指定群内容`CHATROOM_NAME_AUTOFUNNY`LIST格式
