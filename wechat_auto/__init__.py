@@ -180,6 +180,7 @@ def _get_joke():
     #读取文本
     with open("storage/joke", 'r',encoding="utf8") as load_f:
         arr = load_f.read().split('|')
+        random.shuffle(arr)
         msg = arr.pop()
     #回写文本
     with open("storage/joke", 'w',encoding="utf8") as load_f:
