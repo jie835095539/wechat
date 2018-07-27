@@ -184,6 +184,8 @@ def _get_joke():
     #回写文本
     with open("storage/joke", 'w',encoding="utf8") as load_f:
         load_f.write('|'.join(arr))
+    with open("storage/joke_all", 'a',encoding="utf8") as load_f:
+        load_f.write(msg + '|')
     return msg.strip()
 
 #检查当前群名称是否符合指定群名称列表

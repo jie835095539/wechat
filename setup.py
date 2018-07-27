@@ -5,7 +5,7 @@ with open("README.md", "r",encoding="utf8") as fh:
 
 setuptools.setup(
     name="wechat_auto",
-    version="0.8.0",
+    version="0.8.1",
     author="Qinluo",
     author_email="shi12li12@gmail.com",
     description="A wechat chatroom auto reply and sent message robot",
