@@ -20,7 +20,7 @@ __author__ = "Qinluo"
 全局变量
 '''
 LIST_CHATROOM = [] #群列表
-SWITCH_MESSAGE = True #是否开启定时群消息
+SWITCH_MESSAGE = False #是否开启定时群消息
 SWITCH_GREETING = False #是否开启新人入群自动打招呼
 SWITCH_FRIEND = False #是否开启自动通过好友申请
 SWITCH_AUTOFUNNY = True #是否开启群内指定消息的段子自动回复
