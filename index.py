@@ -24,14 +24,14 @@ SWITCH_MESSAGE = True #是否开启定时群消息
 SWITCH_GREETING = False #是否开启新人入群自动打招呼
 SWITCH_FRIEND = False #是否开启自动通过好友申请
 SWITCH_AUTOFUNNY = True #是否开启群内指定消息的段子自动回复
-CHATROOM_NAME_MESSAGE = ["测试"] #定时发送群消息的群昵称
-CHATROOM_SPAN = 30 #发送群消息的间隔时间(S)
+CHATROOM_NAME_MESSAGE = ["咖喱的好笑群"] #定时发送群消息的群昵称
+CHATROOM_SPAN = 60*60*2 #发送群消息的间隔时间(S)
 CHATROOM_NAME_GREETING = ['咖喱的好笑群'] #自动对新人打招呼的群昵称
 CHATROOM_GREETING = 'Hi' #群内对新人的打招呼信息
-CHATROOM_NAME_AUTOFUNNY = ["测试"] #群内指定消息的段子自动回复的群昵称
-CHATRROM_AUTOFUNNY = '测试'
+CHATROOM_NAME_AUTOFUNNY = ["咖喱的好笑群"] #群内指定消息的段子自动回复的群昵称
+CHATRROM_AUTOFUNNY = '馒头'
 AUTOFUNNY_LASTTIME = int(time.time())-3600
-AUTOFUNNY_SPAN = 1 #自动回复群消息间隔
+AUTOFUNNY_SPAN = 60 #自动回复群消息间隔
 NEW_FRIEND_GREETING=('Hi[愉快]','很高兴认识你~以后我们就是朋友啦！','不过我可能不会经常在线，所以如果回复的不及时请见谅哦[偷笑]')#加好友后的打招呼信息
 ALLCOMMAND = "开启(关闭)群消息\n开启(关闭)新人入群打招呼\n开启(关闭)好友申请\n开启(关闭)回复段子\n状态\n"
 
@@ -199,7 +199,7 @@ def _get_chatroom_nickname(username):
 
 
 if __name__ == "__main__":
-    itchat.auto_login(hotReload=True)
+    itchat.auto_login(hotReload=False)
     #获取群列表
     LIST_CHATROOM = itchat.get_chatrooms(True)
     #开启定时群消息任务
