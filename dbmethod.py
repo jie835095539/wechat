@@ -61,6 +61,19 @@ def getJoke():
     conn.close()
     return (result[1].strip(),result[2])
 
+def getStatus(conn):
+    c = conn.cursor()
+    results = c.execute("select count from joke")
+    for row in results:
+        print(row[0])
+    count = c.execute("select count(*) from joke").fetchone()[0]
+    print(count)
+
 if __name__ == '__main__':
     conn = sqlite3.connect('wechat_auto.db')
+    #先导入
+    dumpJoke(conn,'storage/joke')
+    #再去重
+    distinctJoke(conn)
+   
     conn.close()
