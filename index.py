@@ -11,24 +11,27 @@ import threading
 import os
 import re
 import random
+from dbmethod import getJoke
+
+__author__ = "Qinluo"
 
 
 '''
 全局变量
 '''
 LIST_CHATROOM = [] #群列表
-SWITCH_MESSAGE = False #是否开启定时群消息
+SWITCH_MESSAGE = True #是否开启定时群消息
 SWITCH_GREETING = False #是否开启新人入群自动打招呼
 SWITCH_FRIEND = False #是否开启自动通过好友申请
-SWITCH_AUTOFUNNY = False #是否开启群内指定消息的段子自动回复
-CHATROOM_NAME_MESSAGE = ["咖喱的好笑群"] #定时发送群消息的群昵称
-CHATROOM_SPAN = 3600 #发送群消息的间隔时间(S)
+SWITCH_AUTOFUNNY = True #是否开启群内指定消息的段子自动回复
+CHATROOM_NAME_MESSAGE = ["测试"] #定时发送群消息的群昵称
+CHATROOM_SPAN = 30 #发送群消息的间隔时间(S)
 CHATROOM_NAME_GREETING = ['咖喱的好笑群'] #自动对新人打招呼的群昵称
 CHATROOM_GREETING = 'Hi' #群内对新人的打招呼信息
-CHATROOM_NAME_AUTOFUNNY = ["咖喱的好笑群"] #群内指定消息的段子自动回复的群昵称
-CHATRROM_AUTOFUNNY = '群主最棒'
+CHATROOM_NAME_AUTOFUNNY = ["测试"] #群内指定消息的段子自动回复的群昵称
+CHATRROM_AUTOFUNNY = '测试'
 AUTOFUNNY_LASTTIME = int(time.time())-3600
-AUTOFUNNY_SPAN = 3600
+AUTOFUNNY_SPAN = 1 #自动回复群消息间隔
 NEW_FRIEND_GREETING=('Hi[愉快]','很高兴认识你~以后我们就是朋友啦！','不过我可能不会经常在线，所以如果回复的不及时请见谅哦[偷笑]')#加好友后的打招呼信息
 ALLCOMMAND = "开启(关闭)群消息\n开启(关闭)新人入群打招呼\n开启(关闭)好友申请\n开启(关闭)回复段子\n状态\n"
 
@@ -39,7 +42,6 @@ ALLCOMMAND = "开启(关闭)群消息\n开启(关闭)新人入群打招呼\n开�
 
 #BEGIN-----------------------------------手机远程控制模块----------------------------------------------
 #说明：_command函数在msg_friend_text函数中调用，如果手机发送信息给‘文件传输助手’则调用这个控制模块
-
 #好友发送的文本消息
 @itchat.msg_register(TEXT)
 def msg_friend_text(msg):
@@ -105,6 +107,7 @@ def get_status():
         result += "自动通过好友申请: "+ "关闭\n"
     itchat.send(result, toUserName='filehelper')
 
+
 #END-----------------------------------手机远程控制模块----------------------------------------------
 
 #BEGIN----------------------------------新好友请求自动添加模块-----------------------------------------
@@ -144,7 +147,7 @@ def msg_chatroom_note(msg):
     if re.search(CHATRROM_AUTOFUNNY,msg.Text)!=None and SWITCH_AUTOFUNNY and _check_chatroom_name(msg.FromUserName, CHATROOM_NAME_AUTOFUNNY):
         if int(time.time()-AUTOFUNNY_LASTTIME) > AUTOFUNNY_SPAN:
             AUTOFUNNY_LASTTIME = int(time.time())
-            funny = _get_joke()
+            funny = getJoke()[0]
             print(funny)
             print("\n")
             if funny == "":
@@ -160,7 +163,7 @@ def batch_chatroom(names):
     global LIST_CHATROOM
     while True:
         if SWITCH_MESSAGE:
-            msg = _get_joke()
+            msg = getJoke()[0]
             print(msg)
             print("\n")
             if msg=="":
@@ -174,20 +177,6 @@ def batch_chatroom(names):
 #END------------------------------------定时给在特定的群里发送消息模块---------------------------------
 
 #BEGIN------------------------------公共函数模块-------------------------------------------------------
-
-#从storage/joke中提取一个段子
-def _get_joke():
-    #读取文本
-    with open("storage/joke", 'r',encoding="utf8") as load_f:
-        arr = load_f.read().split('|')
-        random.shuffle(arr)
-        msg = arr.pop()
-    #回写文本
-    with open("storage/joke", 'w',encoding="utf8") as load_f:
-        load_f.write('|'.join(arr))
-    with open("storage/joke_all", 'a',encoding="utf8") as load_f:
-        load_f.write(msg + '|')
-    return msg.strip()
 
 #检查当前群名称是否符合指定群名称列表
 def _check_chatroom_name(username,chatroomlist):
@@ -209,10 +198,8 @@ def _get_chatroom_nickname(username):
 #END------------------------------公共函数模块-------------------------------------------------------
 
 
-#主函数
-def run(hot = False):
-    global LIST_CHATROOM
-    itchat.auto_login(hotReload=hot)
+if __name__ == "__main__":
+    itchat.auto_login(hotReload=True)
     #获取群列表
     LIST_CHATROOM = itchat.get_chatrooms(True)
     #开启定时群消息任务
